@@ -1,0 +1,76 @@
+---
+import { services } from '../data/services';
+---
+<section class="services" id="services">
+  <div class="container">
+    <p class="section-label fade-in">SERVICES</p>
+    <div class="services-grid">
+      {services.map((service) => (
+        <div class="service-item fade-in">
+          <span class="service-number">{service.number}</span>
+          <h3 class="service-title-ja">{service.titleJa}</h3>
+          <p class="service-title-en">{service.titleEn}</p>
+          <p class="service-description">{service.description}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+.services {
+  padding: 120px 0;
+}
+
+.services-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 60px 48px;
+}
+
+.service-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.service-number {
+  font-size: 10px;
+  letter-spacing: var(--letter-spacing-wider);
+  color: var(--color-text-sub);
+}
+
+.service-title-ja {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-text);
+  line-height: 1.4;
+}
+
+.service-title-en {
+  font-size: 11px;
+  letter-spacing: var(--letter-spacing-wide);
+  color: var(--color-text-sub);
+  text-transform: uppercase;
+}
+
+.service-description {
+  font-size: 13px;
+  color: var(--color-text-sub);
+  line-height: 1.8;
+  margin-top: 8px;
+}
+
+@media (max-width: 1024px) {
+  .services-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .services-grid {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+}
+</style>
