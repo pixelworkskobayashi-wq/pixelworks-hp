@@ -1,9 +1,42 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import ContactForm from '../components/ContactForm.astro';
+
+const success = Astro.url.searchParams.get('success') === 'true';
 ---
 <Layout title="お問い合わせ">
-  <div class="container" style="padding-top: 80px;">
-    <p class="section-label">Contact</p>
-    <h1>お問い合わせ</h1>
+  <div class="contact-page">
+    <div class="container">
+
+      <div class="page-header fade-in">
+        <p class="section-label">CONTACT</p>
+        <h1 class="page-title">お問い合わせ</h1>
+        <p class="page-lead">
+          建築ビジュアライゼーションに関するご相談・お見積りはお気軽にどうぞ。<br />
+          通常2営業日以内にご返信いたします。
+        </p>
+      </div>
+
+      {success ? (
+        <div class="success-message fade-in">
+          <p>お問い合わせを受け付けました。ありがとうございます。</p>
+          <p>2営業日以内にご連絡いたします。</p>
+          <a href="/" class="text-link" style="display:inline-block;margin-top:24px;">BACK TO HOME →</a>
+        </div>
+      ) : (
+        <div class="fade-in">
+          <ContactForm />
+        </div>
+      )}
+
+    </div>
   </div>
 </Layout>
+
+<style>
+.contact-page { padding: 80px 0 120px; }
+.page-header { margin-bottom: 64px; }
+.page-title { font-size: clamp(24px, 4vw, 40px); font-weight: 700; margin: 16px 0 20px; }
+.page-lead { font-size: 14px; color: var(--color-text-sub); line-height: 1.9; }
+.success-message { font-size: 16px; line-height: 1.8; color: var(--color-text); }
+</style>

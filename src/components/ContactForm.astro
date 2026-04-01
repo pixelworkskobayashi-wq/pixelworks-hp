@@ -1,0 +1,68 @@
+---
+---
+<form
+  name="contact"
+  method="POST"
+  data-netlify="true"
+  netlify-honeypot="bot-field"
+  class="contact-form"
+  action="/contact?success=true"
+>
+  <input type="hidden" name="form-name" value="contact" />
+  <p style="display:none;">
+    <label>Don't fill this out: <input name="bot-field" /></label>
+  </p>
+
+  <div class="form-row">
+    <label class="form-label" for="name">お名前 <span class="required">*</span></label>
+    <input id="name" type="text" name="name" required class="form-input" placeholder="山田 太郎" />
+  </div>
+
+  <div class="form-row">
+    <label class="form-label" for="company">会社名</label>
+    <input id="company" type="text" name="company" class="form-input" placeholder="株式会社〇〇" />
+  </div>
+
+  <div class="form-row">
+    <label class="form-label" for="email">メールアドレス <span class="required">*</span></label>
+    <input id="email" type="email" name="email" required class="form-input" placeholder="your@email.com" />
+  </div>
+
+  <div class="form-row">
+    <label class="form-label" for="message">お問い合わせ内容 <span class="required">*</span></label>
+    <textarea id="message" name="message" required rows="6" class="form-input form-textarea" placeholder="ご依頼の内容・ご予算・スケジュール等をお聞かせください。"></textarea>
+  </div>
+
+  <div class="form-row">
+    <label class="form-label" for="attachment">添付ファイル</label>
+    <input id="attachment" type="file" name="attachment" class="form-file" accept=".pdf,.jpg,.jpeg,.png,.zip" />
+    <p class="form-hint">PDF / JPG / PNG / ZIP（10MB以内）</p>
+  </div>
+
+  <div class="form-submit">
+    <button type="submit" class="text-link submit-btn">SEND MESSAGE →</button>
+  </div>
+</form>
+
+<style>
+.contact-form { max-width: 640px; }
+.form-row { margin-bottom: 40px; }
+.form-label {
+  display: block; font-size: 11px;
+  letter-spacing: var(--letter-spacing-wide);
+  text-transform: uppercase; color: var(--color-text-sub); margin-bottom: 10px;
+}
+.required { color: var(--color-accent); }
+.form-input {
+  width: 100%; background: none; border: none;
+  border-bottom: 1px solid var(--color-border);
+  padding: 10px 0; font-size: 14px; color: var(--color-text);
+  font-family: var(--font-sans); outline: none;
+  transition: border-color var(--transition-base);
+}
+.form-input:focus { border-bottom-color: var(--color-text); }
+.form-textarea { resize: vertical; min-height: 120px; line-height: 1.7; }
+.form-file { font-size: 12px; color: var(--color-text-sub); }
+.form-hint { font-size: 11px; color: var(--color-text-sub); margin-top: 6px; }
+.form-submit { margin-top: 48px; }
+</style>
