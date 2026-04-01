@@ -1,0 +1,131 @@
+---
+import { works, categories } from '../data/works';
+---
+
+<section class="works" id="works">
+  <div class="container">
+    <p class="section-label fade-in">WORKS</p>
+    <div class="works-filter fade-in">
+      {categories.map((cat) => (
+        <button
+          class={`filter-btn ${cat.id === 'all' ? 'active' : ''}`}
+          data-filter={cat.id}
+        >
+          {cat.label}
+        </button>
+      ))}
+    </div>
+    <div class="works-grid">
+      {works.map((work) => (
+        <div
+          class="work-item fade-in"
+          data-category={work.category}
+          data-id={work.id}
+          data-title={work.title}
+          data-description={work.description}
+          data-image={work.imageUrl}
+          role="button"
+          tabindex="0"
+        >
+          <div class="work-image-wrap">
+            <img src={work.imageUrl} alt={work.title} class="work-image" loading="lazy" />
+          </div>
+          <p class="work-title">{work.title}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<div id="work-modal" class="modal" role="dialog" aria-modal="true" style="display:none;">
+  <div class="modal-backdrop"></div>
+  <div class="modal-inner">
+    <button class="modal-close" aria-label="閉じる">✕</button>
+    <img id="modal-image" src="" alt="" class="modal-image" />
+    <div class="modal-body">
+      <h2 id="modal-title" class="modal-title"></h2>
+      <p id="modal-description" class="modal-description"></p>
+    </div>
+  </div>
+</div>
+
+<style>
+.works { padding: 120px 0; background: #fafafa; }
+.works-filter { display: flex; gap: 32px; margin-bottom: 48px; }
+.filter-btn {
+  background: none; border: none;
+  font-size: 10px; letter-spacing: var(--letter-spacing-wider);
+  color: var(--color-text-sub); cursor: pointer;
+  padding: 0 0 4px; border-bottom: 1px solid transparent;
+  transition: color var(--transition-base), border-color var(--transition-base);
+  text-transform: uppercase;
+}
+.filter-btn.active, .filter-btn:hover { color: var(--color-text); border-bottom-color: var(--color-text); }
+.works-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
+.work-item { cursor: pointer; overflow: hidden; }
+.work-image-wrap { overflow: hidden; aspect-ratio: 4/3; }
+.work-image { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease; }
+.work-item:hover .work-image { transform: scale(1.06); }
+.work-title { font-size: 11px; letter-spacing: 0.05em; color: var(--color-text-sub); margin-top: 10px; padding: 0 2px; }
+.work-item.hidden { display: none; }
+.modal { position: fixed; inset: 0; z-index: 200; display: flex; align-items: center; justify-content: center; }
+.modal-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.85); }
+.modal-inner { position: relative; z-index: 1; max-width: 900px; width: 90%; background: #fff; }
+.modal-close { position: absolute; top: -40px; right: 0; background: none; border: none; color: #fff; font-size: 20px; cursor: pointer; line-height: 1; }
+.modal-image { width: 100%; max-height: 70vh; object-fit: cover; display: block; }
+.modal-body { padding: 24px 28px; }
+.modal-title { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+.modal-description { font-size: 13px; color: var(--color-text-sub); line-height: 1.8; }
+@media (max-width: 1024px) { .works-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 640px) { .works-grid { grid-template-columns: 1fr; } }
+</style>
+
+<script>
+  const filterBtns = document.querySelectorAll<HTMLButtonElement>('.filter-btn');
+  const workItems = document.querySelectorAll<HTMLElement>('.work-item');
+
+  filterBtns.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const filter = btn.dataset.filter!;
+      filterBtns.forEach((b) => b.classList.remove('active'));
+      btn.classList.add('active');
+      workItems.forEach((item) => {
+        if (filter === 'all' || item.dataset.category === filter) {
+          item.classList.remove('hidden');
+        } else {
+          item.classList.add('hidden');
+        }
+      });
+    });
+  });
+
+  const modal = document.getElementById('work-modal')!;
+  const modalImage = document.getElementById('modal-image') as HTMLImageElement;
+  const modalTitle = document.getElementById('modal-title')!;
+  const modalDescription = document.getElementById('modal-description')!;
+
+  function openModal(item: HTMLElement) {
+    modalImage.src = item.dataset.image!;
+    modalImage.alt = item.dataset.title!;
+    modalTitle.textContent = item.dataset.title!;
+    modalDescription.textContent = item.dataset.description!;
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeModal() {
+    modal.style.display = 'none';
+    document.body.style.overflow = '';
+  }
+
+  workItems.forEach((item) => {
+    item.addEventListener('click', () => openModal(item));
+    item.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') openModal(item);
+    });
+  });
+
+  document.querySelector('.modal-close')!.addEventListener('click', closeModal);
+  document.querySelector('.modal-backdrop')!.addEventListener('click', closeModal);
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+</script>
