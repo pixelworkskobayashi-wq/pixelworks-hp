@@ -12,6 +12,8 @@
 
   --transition-base: 0.3s ease;
   --transition-slow: 0.6s ease;
+
+  --header-height: 64px;
 }
 
 /* Reset */
