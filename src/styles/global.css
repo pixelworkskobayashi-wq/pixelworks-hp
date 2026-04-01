@@ -1,0 +1,88 @@
+/* Design Tokens */
+:root {
+  --color-bg: #ffffff;
+  --color-text: #1a1a1a;
+  --color-text-sub: #888888;
+  --color-border: #eeeeee;
+  --color-accent: #2c4a7c; /* 後日変更可。ここ1行だけ変えれば全体に反映 */
+
+  --font-sans: 'Noto Sans JP', 'Helvetica Neue', Arial, sans-serif;
+  --letter-spacing-wide: 0.15em;
+  --letter-spacing-wider: 0.25em;
+
+  --transition-base: 0.3s ease;
+  --transition-slow: 0.6s ease;
+}
+
+/* Reset */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+/* Utility */
+.section-label {
+  font-size: 10px;
+  letter-spacing: var(--letter-spacing-wider);
+  color: var(--color-text-sub);
+  text-transform: uppercase;
+  margin-bottom: 24px;
+}
+
+.text-link {
+  font-size: 11px;
+  letter-spacing: var(--letter-spacing-wide);
+  color: var(--color-text);
+  text-transform: uppercase;
+  text-decoration: none;
+  border-bottom: 1px solid var(--color-text);
+  padding-bottom: 2px;
+  transition: opacity var(--transition-base);
+}
+
+.text-link:hover {
+  opacity: 0.5;
+}
+
+/* Fade-in animation (scroll trigger) */
+.fade-in {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity var(--transition-slow), transform var(--transition-slow);
+}
+
+.fade-in.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Container */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 40px;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 0 20px;
+  }
+}
