@@ -1,17 +1,14 @@
 ---
 ---
 <form
-  name="contact"
+  action="https://api.web3forms.com/submit"
   method="POST"
-  data-netlify="true"
-  netlify-honeypot="bot-field"
   class="contact-form"
-  action="/contact?success=true"
 >
-  <input type="hidden" name="form-name" value="contact" />
-  <p style="display:none;">
-    <label>Don't fill this out: <input name="bot-field" /></label>
-  </p>
+  <input type="hidden" name="access_key" value="4110fb94-6c7b-4fc4-9753-c58f6a3241aa" />
+  <input type="hidden" name="subject" value="【Pixel Works】お問い合わせがありました" />
+  <input type="hidden" name="redirect" value="https://sparkly-pixie-c59091.netlify.app/contact?success=true" />
+  <input type="checkbox" name="botcheck" style="display:none;" />
 
   <div class="form-row">
     <label class="form-label" for="name">お名前 <span class="required">*</span></label>
