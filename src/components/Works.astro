@@ -18,17 +18,22 @@ import { works, categories } from '../data/works';
     <div class="works-grid">
       {works.map((work) => (
         <div
-          class="work-item fade-in"
+          class="work-item"
           data-category={work.category}
+          data-shape={work.shape}
           data-id={work.id}
           data-title={work.title}
           data-description={work.description}
           data-image={work.imageUrl}
+          data-embed-url={work.embedUrl ?? ''}
           role="button"
           tabindex="0"
         >
           <div class="work-image-wrap">
             <img src={work.imageUrl} alt={work.title} class="work-image" loading="lazy" />
+            {work.embedUrl && (
+              <div class="work-badge">{work.category === 'movie' ? '▶' : 'VR'}</div>
+            )}
           </div>
           <p class="work-title">{work.title}</p>
         </div>
@@ -37,19 +42,30 @@ import { works, categories } from '../data/works';
   </div>
 </section>
 
-<div id="work-modal" class="modal" role="dialog" aria-modal="true" style="display:none;">
-  <div class="modal-backdrop"></div>
-  <div class="modal-inner">
-    <button class="modal-close" aria-label="閉じる">✕</button>
-    <img id="modal-image" src="" alt="" class="modal-image" />
-    <div class="modal-body">
-      <h2 id="modal-title" class="modal-title"></h2>
-      <p id="modal-description" class="modal-description"></p>
-    </div>
+<!-- Embed modal: YouTube / Twinmotion iframe -->
+<div id="embed-modal" class="embed-modal">
+  <div class="embed-backdrop" id="embed-backdrop"></div>
+  <div class="embed-container">
+    <iframe id="embed-iframe" src="" allowfullscreen allow="autoplay; fullscreen"></iframe>
   </div>
+  <button class="embed-close" id="embed-close" aria-label="閉じる">✕</button>
+</div>
+
+<!-- Modal: single fly-img moves between states -->
+<div id="work-modal" class="modal" role="dialog" aria-modal="true">
+  <div class="modal-backdrop" id="modal-backdrop"></div>
+  <img id="fly-img" class="fly-img" src="" alt="" draggable="false" />
+  <div class="modal-info" id="modal-info">
+    <h2 id="modal-title" class="modal-title"></h2>
+    <p id="modal-desc" class="modal-desc"></p>
+  </div>
+  <button class="modal-close" id="modal-close" aria-label="閉じる">✕</button>
+  <button class="modal-nav modal-prev" id="modal-prev" aria-label="前へ">‹</button>
+  <button class="modal-nav modal-next" id="modal-next" aria-label="次へ">›</button>
 </div>
 
 <style>
+/* ── Gallery ────────────────────────────────────── */
 .works { padding: 120px 0; background: #fafafa; }
 .works-filter { display: flex; gap: 32px; margin-bottom: 48px; }
 .filter-btn {
@@ -61,71 +77,723 @@ import { works, categories } from '../data/works';
   text-transform: uppercase;
 }
 .filter-btn.active, .filter-btn:hover { color: var(--color-text); border-bottom-color: var(--color-text); }
-.works-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
-.work-item { cursor: pointer; overflow: hidden; }
-.work-image-wrap { overflow: hidden; aspect-ratio: 4/3; }
-.work-image { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease; }
-.work-item:hover .work-image { transform: scale(1.06); }
-.work-title { font-size: 11px; letter-spacing: 0.05em; color: var(--color-text-sub); margin-top: 10px; padding: 0 2px; }
+
+.works-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 4px; align-items: start;
+}
+.work-item { overflow: visible; }
 .work-item.hidden { display: none; }
-.modal { position: fixed; inset: 0; z-index: 200; display: flex; align-items: center; justify-content: center; }
-.modal-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.85); }
-.modal-inner { position: relative; z-index: 1; max-width: 900px; width: 90%; background: #fff; }
-.modal-close { position: absolute; top: -40px; right: 0; background: none; border: none; color: #fff; font-size: 20px; cursor: pointer; line-height: 1; }
-.modal-image { width: 100%; max-height: 70vh; object-fit: cover; display: block; }
-.modal-body { padding: 24px 28px; }
-.modal-title { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
-.modal-description { font-size: 13px; color: var(--color-text-sub); line-height: 1.8; }
+.work-item[data-shape="landscape"] .work-image-wrap { aspect-ratio: 16/9; }
+.work-item[data-shape="portrait"]  .work-image-wrap { aspect-ratio: 3/4; }
+.work-item[data-shape="square"]    .work-image-wrap { aspect-ratio: 1/1; }
+.work-image-wrap {
+  overflow: hidden; cursor: pointer;
+  opacity: 0; transform: translateY(24px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+.work-image {
+  width: 100%; height: 100%; object-fit: cover;
+  transition: transform 0.5s ease; pointer-events: none;
+}
+.work-item:hover .work-image { transform: scale(1.06); }
+.work-title {
+  font-size: 11px; letter-spacing: 0.05em; color: var(--color-text-sub);
+  margin-top: 10px; padding: 0 2px; cursor: pointer;
+  opacity: 0; transform: translateX(12px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.work-item.in-view .work-image-wrap { opacity: 1; transform: translateY(0); }
+.work-item.in-view .work-title { opacity: 1; transform: translateX(0); transition-delay: 0.65s; }
+
+/* ── Modal backdrop ─────────────────────────────── */
+.modal {
+  position: fixed; inset: 0; z-index: 200;
+  pointer-events: none;
+}
+.modal.is-open { pointer-events: all; }
+
+.modal-backdrop {
+  position: absolute; inset: 0; background: #fff;
+  opacity: 0; transition: opacity 0.4s ease;
+}
+.modal.is-open .modal-backdrop { opacity: 1; }
+
+/* ── Flying image ───────────────────────────────── */
+.fly-img {
+  position: fixed;
+  display: none;
+  object-fit: cover;
+  /* override any global img constraints */
+  max-width: none !important;
+  max-height: none !important;
+  user-select: none;
+  -webkit-user-drag: none;
+  transform-origin: 0 0;
+  will-change: transform;
+  z-index: 201;
+}
+.fly-img.is-mid  { cursor: zoom-in; }
+.fly-img.is-max  { cursor: grab; }
+.fly-img.is-max.dragging { cursor: grabbing; }
+
+/* ── Info panel (mid mode) ──────────────────────── */
+.modal-info {
+  position: fixed; z-index: 202;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+.modal-info.visible { opacity: 1; pointer-events: all; }
+.modal-title { font-size: 15px; font-weight: 700; margin-bottom: 6px; color: var(--color-text); }
+.modal-desc  { font-size: 13px; color: var(--color-text-sub); line-height: 1.8; }
+
+/* ── Controls ───────────────────────────────────── */
+.modal-close {
+  position: fixed; z-index: 203;
+  display: none; background: none; border: none;
+  color: var(--color-text); font-size: 20px; cursor: pointer;
+  line-height: 1; opacity: 0.4; transition: opacity 0.2s;
+  letter-spacing: 0.05em;
+}
+.modal-close:hover { opacity: 1; }
+.modal.is-open .modal-close { display: block; }
+
+.modal-nav {
+  position: fixed; top: 50%; transform: translateY(-50%); z-index: 203;
+  display: none; background: none; border: none;
+  color: rgba(0,0,0,0.2); font-size: 48px;
+  cursor: pointer; padding: 0 16px; line-height: 1;
+  transition: color 0.2s; user-select: none;
+}
+.modal-nav:hover { color: var(--color-text); }
+.modal-prev { left: 8px; }
+.modal-next { right: 8px; }
+.modal.is-mid .modal-nav { display: block; }
+
+/* ── Slide transitions ──────────────────────────── */
+@keyframes slideOutLeft  { to { opacity:0; transform: translateX(-50px); } }
+@keyframes slideOutRight { to { opacity:0; transform: translateX(50px); } }
+@keyframes slideInLeft   { from { opacity:0; transform: translateX(50px); }  to { opacity:1; transform:none; } }
+@keyframes slideInRight  { from { opacity:0; transform: translateX(-50px); } to { opacity:1; transform:none; } }
+
+.modal-info.slide-out-left  { animation: slideOutLeft  0.25s ease forwards; }
+.modal-info.slide-out-right { animation: slideOutRight 0.25s ease forwards; }
+.modal-info.slide-in-left   { animation: slideInLeft   0.25s ease forwards; }
+.modal-info.slide-in-right  { animation: slideInRight  0.25s ease forwards; }
+
+/* ── Work badge (▶ / 360°) ──────────────────────── */
+.work-badge {
+  position: absolute; top: 8px; right: 8px;
+  background: rgba(0,0,0,0.55); color: #fff;
+  font-size: 10px; letter-spacing: 0.06em;
+  padding: 3px 7px; border-radius: 2px;
+  pointer-events: none; user-select: none;
+}
+
+/* ── Embed modal ────────────────────────────────── */
+.embed-modal {
+  position: fixed; inset: 0; z-index: 300;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 18px;
+  pointer-events: none;
+  opacity: 0; transition: opacity 0.3s ease;
+}
+.embed-modal.is-open { pointer-events: all; opacity: 1; }
+
+.embed-backdrop {
+  position: absolute; inset: 0;
+  background: #fff;
+}
+.embed-container {
+  position: relative; z-index: 1;
+  width: min(90vw, 1200px);
+  aspect-ratio: 16/9;
+}
+.embed-container iframe {
+  width: 100%; height: 100%; border: none; display: block;
+}
+.embed-close {
+  position: relative; z-index: 1;
+  background: none; border: none;
+  color: var(--color-text); font-size: 20px;
+  cursor: pointer; line-height: 1;
+  opacity: 0.4; transition: opacity 0.2s;
+  letter-spacing: 0.05em;
+}
+.embed-close:hover { opacity: 1; }
+
 @media (max-width: 1024px) { .works-grid { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 640px) { .works-grid { grid-template-columns: 1fr; } }
+@media (max-width: 640px)  { .works-grid { grid-template-columns: 1fr; } }
 </style>
 
 <script>
-  const filterBtns = document.querySelectorAll<HTMLButtonElement>('.filter-btn');
-  const workItems = document.querySelectorAll<HTMLElement>('.work-item');
+  /* ── Scroll lock ────────────────────────────────── */
+  // Freeze the page while modal is open so thumbnail never drifts
+  let savedScrollY = 0;
+  function lockScroll() {
+    savedScrollY = window.scrollY;
+    document.body.style.position = 'fixed';
+    document.body.style.top      = `-${savedScrollY}px`;
+    document.body.style.width    = '100%';
+  }
+  function unlockScroll() {
+    document.body.style.position = '';
+    document.body.style.top      = '';
+    document.body.style.width    = '';
+    window.scrollTo({ top: savedScrollY, behavior: 'instant' as ScrollBehavior });
+  }
 
-  filterBtns.forEach((btn) => {
+  /* ── Elements ──────────────────────────────────── */
+  const workItems   = Array.from(document.querySelectorAll<HTMLElement>('.work-item'));
+  const filterBtns  = document.querySelectorAll<HTMLButtonElement>('.filter-btn');
+  const embedModal  = document.getElementById('embed-modal')!;
+  const embedIframe = document.getElementById('embed-iframe') as HTMLIFrameElement;
+  const embedClose  = document.getElementById('embed-close')!;
+  const modal       = document.getElementById('work-modal')!;
+  const flyImg      = document.getElementById('fly-img') as HTMLImageElement;
+  const modalInfo   = document.getElementById('modal-info')!;
+  const titleEl     = document.getElementById('modal-title')!;
+  const descEl      = document.getElementById('modal-desc')!;
+  const closeBtn    = document.getElementById('modal-close')!;
+  const prevBtn     = document.getElementById('modal-prev')!;
+  const nextBtn     = document.getElementById('modal-next')!;
+
+  /* ── State ─────────────────────────────────────── */
+  type Mode = 'closed' | 'mid' | 'max';
+  let mode: Mode = 'closed';
+  let currentIndex = 0;
+  let natW = 1, natH = 1;            // natural image dimensions
+  let thumbRectStore: DOMRect | null = null;
+  let showInfoTimer = 0;
+
+  function visibleItems() { return workItems.filter(i => !i.classList.contains('hidden')); }
+
+  /* ── Rect helpers ──────────────────────────────── */
+  type R = { x: number; y: number; w: number; h: number };
+
+  function getMidRect(): R {
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const maxW = Math.min(860, vw * 0.88);
+    const maxH = vh * 0.60;
+    const s = Math.min(maxW / natW, maxH / natH);
+    const w = natW * s, h = natH * s;
+    return { x: (vw - w) / 2, y: (vh - h) / 2 - 24, w, h };
+  }
+
+  function getMaxRect(): R {
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const s = Math.max(vw / natW, vh / natH);
+    const w = natW * s, h = natH * s;
+    return { x: (vw - w) / 2, y: (vh - h) / 2, w, h };
+  }
+
+  /* ── FLIP animation ────────────────────────────── */
+  // Positions fly-img at `to`, applies inverse transform to make it look like `from`,
+  // then animates to identity. GPU-accelerated (only transform changes).
+  function flipTo(from: R, to: R, duration = 0.45) {
+    flyImg.style.transition = 'none';
+    flyImg.style.left   = to.x + 'px';
+    flyImg.style.top    = to.y + 'px';
+    flyImg.style.width  = to.w + 'px';
+    flyImg.style.height = to.h + 'px';
+    flyImg.style.transformOrigin = '0 0';
+
+    const dx = from.x - to.x;
+    const dy = from.y - to.y;
+    const sc = from.w / to.w;  // uniform scale (same aspect ratio guaranteed)
+    flyImg.style.transform = `translate(${dx}px,${dy}px) scale(${sc})`;
+
+    // Force layout so the browser registers the starting transform
+    flyImg.getBoundingClientRect();
+
+    flyImg.style.transition = `transform ${duration}s cubic-bezier(0.22,1,0.36,1)`;
+    flyImg.style.transform  = 'none';
+  }
+
+  /* ── Info panel positioning ────────────────────── */
+  function showInfo(midR: R) {
+    const infoTop = midR.y + midR.h + 14;
+    modalInfo.style.left  = midR.x + 'px';
+    modalInfo.style.top   = infoTop + 'px';
+    modalInfo.style.width = midR.w + 'px';
+    modalInfo.classList.add('visible');
+
+    // Position close button below info text, horizontally centered
+    requestAnimationFrame(() => {
+      const infoH = modalInfo.offsetHeight;
+      closeBtn.style.top       = (infoTop + infoH + 18) + 'px';
+      closeBtn.style.left      = (midR.x + midR.w / 2) + 'px';
+      closeBtn.style.right     = 'auto';
+      closeBtn.style.transform = 'translateX(-50%)';
+    });
+  }
+  function hideInfo() { modalInfo.classList.remove('visible'); }
+
+  /* ── Embed modal ───────────────────────────────── */
+  function openEmbedModal(embedUrl: string, alreadyLocked = false) {
+    if (!alreadyLocked) lockScroll();
+    // autoplay=1 を付与（YouTube / Twinmotion 両対応）
+    const url = embedUrl.includes('?') ? embedUrl + '&autoplay=1' : embedUrl + '?autoplay=1';
+    embedIframe.src = url;
+    embedModal.classList.add('is-open');
+  }
+
+  function closeEmbedModal() {
+    embedModal.classList.remove('is-open');
+    embedIframe.src = '';   // 動画を停止
+    unlockScroll();
+  }
+
+  embedClose.addEventListener('click', closeEmbedModal);
+  document.getElementById('embed-backdrop')!.addEventListener('click', closeEmbedModal);
+
+  /* ── Entrance observer ─────────────────────────── */
+  const observer = new IntersectionObserver(
+    entries => entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('in-view'); observer.unobserve(e.target); }
+    }),
+    { threshold: 0.15 }
+  );
+  workItems.forEach(i => observer.observe(i));
+
+  /* ── Category filter ───────────────────────────── */
+  filterBtns.forEach(btn => {
     btn.addEventListener('click', () => {
-      const filter = btn.dataset.filter!;
-      filterBtns.forEach((b) => b.classList.remove('active'));
+      const f = btn.dataset.filter!;
+      filterBtns.forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-      workItems.forEach((item) => {
-        if (filter === 'all' || item.dataset.category === filter) {
-          item.classList.remove('hidden');
-        } else {
-          item.classList.add('hidden');
-        }
+      workItems.forEach(item => {
+        if (f === 'all' || item.dataset.category === f) item.classList.remove('hidden');
+        else item.classList.add('hidden');
       });
     });
   });
 
-  const modal = document.getElementById('work-modal')!;
-  const modalImage = document.getElementById('modal-image') as HTMLImageElement;
-  const modalTitle = document.getElementById('modal-title')!;
-  const modalDescription = document.getElementById('modal-description')!;
+  /* ── Open mid ──────────────────────────────────── */
+  function openMid(index: number) {
+    const items = visibleItems();
+    if (!items[index]) return;
+    currentIndex = index;
+    const item = items[index];
 
-  function openModal(item: HTMLElement) {
-    modalImage.src = item.dataset.image!;
-    modalImage.alt = item.dataset.title!;
-    modalTitle.textContent = item.dataset.title!;
-    modalDescription.textContent = item.dataset.description!;
-    modal.style.display = 'flex';
-    document.body.style.overflow = 'hidden';
+    // Use already-loaded thumbnail to get natural dimensions
+    const thumbImg   = item.querySelector<HTMLImageElement>('.work-image')!;
+    const thumbWrap  = item.querySelector<HTMLElement>('.work-image-wrap')!;
+    thumbRectStore   = thumbWrap.getBoundingClientRect();
+    natW = thumbImg.naturalWidth  || 800;
+    natH = thumbImg.naturalHeight || 600;
+
+    titleEl.textContent = item.dataset.title!;
+    descEl.textContent  = item.dataset.description!;
+
+    // Set up fly image (start hidden, show after src loaded)
+    flyImg.src = item.dataset.image!;
+    flyImg.alt = item.dataset.title!;
+    flyImg.className = 'fly-img is-mid';
+    flyImg.style.display = 'block';
+    flyImg.style.transform = 'none';
+
+    modal.classList.add('is-open', 'is-mid');
+    modal.classList.remove('is-max');
+    mode = 'mid';
+    lockScroll();
+
+    const fromR: R = { x: thumbRectStore.left, y: thumbRectStore.top, w: thumbRectStore.width, h: thumbRectStore.height };
+    const midR = getMidRect();
+
+    flipTo(fromR, midR);
+    showInfoTimer = setTimeout(() => showInfo(midR), 350);
   }
 
+  /* ── Close modal (animate back to thumbnail) ───── */
   function closeModal() {
-    modal.style.display = 'none';
-    document.body.style.overflow = '';
+    if (mode === 'closed') return;
+    const prevMode = mode;
+    mode = 'closed';
+    clearTimeout(showInfoTimer);
+    hideInfo();
+    cancelAnimationFrame(rafId);
+
+    // Remove modal classes immediately so backdrop + controls fade out right away
+    modal.classList.remove('is-open', 'is-mid', 'is-max');
+
+    const fromR: R = { x: parseFloat(flyImg.style.left), y: parseFloat(flyImg.style.top), w: parseFloat(flyImg.style.width), h: parseFloat(flyImg.style.height) };
+
+    // If panning, incorporate pan offset
+    if (prevMode === 'max') {
+      fromR.x += panX; fromR.y += panY;
+      panX = 0; panY = 0;
+    }
+
+    // Re-read thumbnail position — page may have scrolled since modal opened
+    const curItems = visibleItems();
+    const curItem = curItems[currentIndex];
+    if (curItem) {
+      thumbRectStore = curItem.querySelector<HTMLElement>('.work-image-wrap')!.getBoundingClientRect();
+    }
+    const thumbR = thumbRectStore ?? { left: 0, top: 0, width: 60, height: 60 };
+    const toR: R = { x: thumbR.left, y: thumbR.top, w: thumbR.width, h: thumbR.height };
+
+    flyImg.style.transition = 'none';
+    flyImg.style.left   = fromR.x + 'px';
+    flyImg.style.top    = fromR.y + 'px';
+    flyImg.style.width  = fromR.w + 'px';
+    flyImg.style.height = fromR.h + 'px';
+    flyImg.style.transform = 'none';
+    flyImg.getBoundingClientRect();
+
+    flipTo(fromR, toR, 0.38);
+
+    setTimeout(() => {
+      flyImg.style.display = 'none';
+      unlockScroll();
+    }, 400);
   }
 
-  workItems.forEach((item) => {
-    item.addEventListener('click', () => openModal(item));
-    item.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') openModal(item);
+  /* ── Open max ──────────────────────────────────── */
+  function openMax() {
+    if (mode !== 'mid') return;
+    cancelAnimationFrame(rafId);
+    panX = 0; panY = 0; velX = 0; velY = 0;
+    hideInfo();
+
+    const fromR: R = { x: parseFloat(flyImg.style.left), y: parseFloat(flyImg.style.top), w: parseFloat(flyImg.style.width), h: parseFloat(flyImg.style.height) };
+    const maxR = getMaxRect();
+    maxLimitX = Math.max(0, (maxR.w - window.innerWidth)  / 2);
+    maxLimitY = Math.max(0, (maxR.h - window.innerHeight) / 2);
+
+    flyImg.className = 'fly-img is-max';
+    modal.classList.add('is-max');
+    modal.classList.remove('is-mid');
+    mode = 'max';
+
+    flipTo(fromR, maxR, 0.42);
+  }
+
+  /* ── Close max → mid ───────────────────────────── */
+  function closeMax() {
+    if (mode !== 'max') return;
+    cancelAnimationFrame(rafId);
+
+    // Start position includes current pan offset
+    const maxR = getMaxRect();
+    const fromR: R = { x: maxR.x + panX, y: maxR.y + panY, w: maxR.w, h: maxR.h };
+    panX = 0; panY = 0;
+
+    flyImg.style.transition = 'none';
+    flyImg.style.left   = fromR.x + 'px';
+    flyImg.style.top    = fromR.y + 'px';
+    flyImg.style.width  = fromR.w + 'px';
+    flyImg.style.height = fromR.h + 'px';
+    flyImg.style.transform = 'none';
+    flyImg.getBoundingClientRect();
+
+    flyImg.className = 'fly-img is-mid';
+    modal.classList.remove('is-max');
+    modal.classList.add('is-mid');
+    mode = 'mid';
+
+    const midR = getMidRect();
+    flipTo(fromR, midR, 0.42);
+    showInfoTimer = setTimeout(() => showInfo(midR), 320);
+  }
+
+  /* ── Navigate (mid) ────────────────────────────── */
+  function navigateTo(nextIndex: number, dir: 'left' | 'right') {
+    const items = visibleItems();
+    if (!items[nextIndex] || mode !== 'mid') return;
+    const outCls = dir === 'left' ? 'slide-out-left' : 'slide-out-right';
+
+    // 遷移先が embedUrl を持つ場合 → embed モーダルに切り替え
+    const nextEmbedUrl = items[nextIndex].dataset.embedUrl;
+    if (nextEmbedUrl) {
+      clearTimeout(showInfoTimer);
+      modalInfo.classList.add(outCls);
+      flyImg.style.transition = 'opacity 0.2s ease';
+      flyImg.style.opacity = '0';
+      currentIndex = nextIndex;
+      // embed モーダルを先に開く（z-index:300 で画像モーダルを完全に覆う→サムネ透け防止）
+      openEmbedModal(nextEmbedUrl, true);
+      setTimeout(() => {
+        // embed モーダルが前面にある状態で画像モーダルを静かに片付ける
+        hideInfo();
+        modal.classList.remove('is-open', 'is-mid', 'is-max');
+        flyImg.style.display = 'none';
+        flyImg.style.opacity = '';
+        flyImg.style.transition = '';
+        mode = 'closed';
+      }, 350);
+      return;
+    }
+
+    const inCls  = dir === 'left' ? 'slide-in-left'  : 'slide-in-right';
+    modalInfo.classList.add(outCls);
+    setTimeout(() => {
+      modalInfo.classList.remove(outCls, 'visible');
+      openMidSilent(nextIndex, dir);
+    }, 230);
+    // fly image: quick fade-slide
+    flyImg.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
+    flyImg.style.opacity = '0';
+    flyImg.style.transform = dir === 'left' ? 'translateX(-30px)' : 'translateX(30px)';
+    setTimeout(() => {
+      flyImg.style.transition = '';
+      flyImg.style.opacity = '';
+      flyImg.style.transform = 'none';
+    }, 220);
+  }
+
+  function openMidSilent(index: number, inDir: 'left' | 'right') {
+    const items = visibleItems();
+    if (!items[index]) return;
+    currentIndex = index;
+    const item = items[index];
+    const thumbImg = item.querySelector<HTMLImageElement>('.work-image')!;
+    const thumbWrap = item.querySelector<HTMLElement>('.work-image-wrap')!;
+    thumbRectStore = thumbWrap.getBoundingClientRect();
+    natW = thumbImg.naturalWidth  || 800;
+    natH = thumbImg.naturalHeight || 600;
+    flyImg.src = item.dataset.image!;
+    flyImg.alt = item.dataset.title!;
+    titleEl.textContent = item.dataset.title!;
+    descEl.textContent  = item.dataset.description!;
+    const midR = getMidRect();
+    flyImg.style.transition = 'none';
+    flyImg.style.left   = midR.x + 'px';
+    flyImg.style.top    = midR.y + 'px';
+    flyImg.style.width  = midR.w + 'px';
+    flyImg.style.height = midR.h + 'px';
+    const inCls = inDir === 'left' ? 'slide-in-left' : 'slide-in-right';
+    setTimeout(() => {
+      modalInfo.classList.remove('slide-out-left', 'slide-out-right');
+      modalInfo.classList.add(inCls);
+      showInfo(midR);
+      setTimeout(() => modalInfo.classList.remove(inCls), 280);
+    }, 10);
+  }
+
+  /* ── Event bindings ────────────────────────────── */
+
+  // Gallery click (only on image-wrap or title)
+  workItems.forEach(item => {
+    const open = () => {
+      const embedUrl = item.dataset.embedUrl;
+      if (embedUrl) {
+        openEmbedModal(embedUrl);
+      } else {
+        const items = visibleItems();
+        const idx = items.indexOf(item);
+        if (idx >= 0) openMid(idx);
+      }
+    };
+    item.querySelector('.work-image-wrap')!.addEventListener('click', open);
+    item.querySelector('.work-title')!.addEventListener('click', open);
+    item.addEventListener('keydown', (e: KeyboardEvent) => {
+      if (e.key === 'Enter' || e.key === ' ') open();
     });
   });
 
-  document.querySelector('.modal-close')!.addEventListener('click', closeModal);
-  document.querySelector('.modal-backdrop')!.addEventListener('click', closeModal);
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+  // Backdrop click → close
+  document.getElementById('modal-backdrop')!.addEventListener('click', () => {
+    if (mode === 'mid') closeModal();
+  });
+
+  // Prevent browser's native image drag (would block custom drag)
+  flyImg.addEventListener('dragstart', e => e.preventDefault());
+
+  // Fly image click (skip if a mid-drag navigation just finished)
+  flyImg.addEventListener('click', () => {
+    if (midDragNavigated) { midDragNavigated = false; return; }
+    if (mode === 'mid') openMax();
+    else if (mode === 'max' && !hasPanned) closeMax();
+    hasPanned = false;
+  });
+
+  closeBtn.addEventListener('click', closeModal);
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      if (embedModal.classList.contains('is-open')) { closeEmbedModal(); return; }
+      mode === 'max' ? closeMax() : closeModal();
+    }
+    if (e.key === 'ArrowLeft'  && mode === 'mid' && currentIndex > 0)
+      navigateTo(currentIndex - 1, 'right');
+    if (e.key === 'ArrowRight' && mode === 'mid' && currentIndex < visibleItems().length - 1)
+      navigateTo(currentIndex + 1, 'left');
+  });
+
+  prevBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    if (currentIndex > 0) navigateTo(currentIndex - 1, 'right');
+  });
+  nextBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    if (currentIndex < visibleItems().length - 1) navigateTo(currentIndex + 1, 'left');
+  });
+
+  // Scroll wheel: mid → close (no page scroll), max → pan image
+  document.addEventListener('wheel', (e) => {
+    if (mode === 'mid') {
+      e.preventDefault(); // prevent page scroll so thumbnail stays in place
+      closeModal();
+    } else if (mode === 'max') {
+      e.preventDefault();
+      const dx = e.deltaX * 0.8;
+      const dy = e.deltaY * 0.8;
+      panX = Math.max(-maxLimitX, Math.min(maxLimitX, panX + dx));
+      panY = Math.max(-maxLimitY, Math.min(maxLimitY, panY + dy));
+      applyPan();
+    }
+  }, { passive: false });
+
+  // Mid-zoom drag to navigate (flyImg のみ — 余白クリックでは発動しない)
+  let midDragStart = 0, isMidDragging = false, midDragNavigated = false;
+  flyImg.addEventListener('mousedown', e => {
+    if (mode !== 'mid') return;
+    e.preventDefault(); // prevent browser image-drag / text-selection
+    midDragStart = e.clientX; isMidDragging = true; midDragNavigated = false;
+  });
+  document.addEventListener('mousemove', e => {
+    // Suppress default cursor ghost while dragging in mid mode
+    if (isMidDragging) e.preventDefault();
+  });
+  document.addEventListener('mouseup', e => {
+    if (!isMidDragging) return;
+    isMidDragging = false;
+    const dx = e.clientX - midDragStart;
+    if (Math.abs(dx) < 30) return;
+    midDragNavigated = true;
+    const items = visibleItems();
+    if (dx < 0 && currentIndex < items.length - 1) navigateTo(currentIndex + 1, 'left');
+    if (dx > 0 && currentIndex > 0)               navigateTo(currentIndex - 1, 'right');
+  });
+
+  /* ── Max-zoom pan ──────────────────────────────── */
+  let panX = 0, panY = 0;
+  let velX = 0, velY = 0;
+  let maxLimitX = 0, maxLimitY = 0;
+  let isPanning = false, hasPanned = false;
+  let lastX = 0, lastY = 0, lastMoveT = 0;
+  let rafId = 0;
+
+  function applyPan() {
+    flyImg.style.transition = 'none';
+    flyImg.style.transform  = `translate(${panX}px, ${panY}px)`;
+  }
+
+  // Soft resistance while dragging past boundary
+  function resist(v: number, limit: number): number {
+    if (limit === 0) return 0;
+    if (Math.abs(v) <= limit) return v;
+    const excess = Math.abs(v) - limit;
+    return Math.sign(v) * (limit + excess * 0.22);
+  }
+
+  // Inertia loop: gentle decay; single CSS snap-back on boundary hit
+  function inertiaLoop() {
+    velX *= 0.96; velY *= 0.96;
+    const nx = panX + velX;
+    const ny = panY + velY;
+    const cx = Math.max(-maxLimitX, Math.min(maxLimitX, nx));
+    const cy = Math.max(-maxLimitY, Math.min(maxLimitY, ny));
+
+    if (cx !== nx || cy !== ny) {
+      velX = 0; velY = 0;
+      panX = nx; panY = ny;
+      applyPan();
+      requestAnimationFrame(() => {
+        flyImg.style.transition = 'transform 0.32s cubic-bezier(0.25,0.46,0.45,0.94)';
+        panX = cx; panY = cy;
+        flyImg.style.transform = `translate(${panX}px, ${panY}px)`;
+        setTimeout(() => { flyImg.style.transition = 'none'; }, 340);
+      });
+      return;
+    }
+
+    panX = nx; panY = ny;
+    applyPan();
+    if (Math.abs(velX) > 0.15 || Math.abs(velY) > 0.15) {
+      rafId = requestAnimationFrame(inertiaLoop);
+    }
+  }
+
+  // Update velocity via EWMA during drag so release speed is always captured
+  function updateVel(dx: number, dy: number) {
+    const now = performance.now();
+    const dt = now - lastMoveT;
+    lastMoveT = now;
+    if (dt > 0 && dt < 200) {
+      // Normalise to ~16ms frame time, then blend with running average
+      const rawX = (dx / dt) * 16;
+      const rawY = (dy / dt) * 16;
+      velX = velX * 0.4 + rawX * 0.6;
+      velY = velY * 0.4 + rawY * 0.6;
+    } else {
+      // Gap too large (mouse was stopped) — reset velocity
+      velX = 0; velY = 0;
+    }
+  }
+
+  flyImg.addEventListener('mousedown', e => {
+    if (mode !== 'max') return;
+    isPanning = true; hasPanned = false;
+    lastX = e.clientX; lastY = e.clientY; lastMoveT = performance.now();
+    flyImg.classList.add('dragging');
+    cancelAnimationFrame(rafId);
+    velX = 0; velY = 0;
+    e.preventDefault();
+  });
+
+  document.addEventListener('mousemove', e => {
+    if (!isPanning || mode !== 'max') return;
+    const dx = e.clientX - lastX;
+    const dy = e.clientY - lastY;
+    if (Math.abs(dx) > 2 || Math.abs(dy) > 2) hasPanned = true;
+    updateVel(dx, dy);
+    lastX = e.clientX; lastY = e.clientY;
+    panX = resist(panX + dx, maxLimitX);
+    panY = resist(panY + dy, maxLimitY);
+    applyPan();
+  });
+
+  document.addEventListener('mouseup', () => {
+    if (!isPanning) return;
+    isPanning = false;
+    flyImg.classList.remove('dragging');
+    // If mouse was still just before release, decay the stale velocity
+    const staleness = performance.now() - lastMoveT;
+    if (staleness > 60) { velX *= 0.3; velY *= 0.3; }
+    rafId = requestAnimationFrame(inertiaLoop);
+  });
+
+  // Touch pan
+  flyImg.addEventListener('touchstart', e => {
+    if (mode !== 'max') return;
+    isPanning = true; hasPanned = false;
+    lastX = e.touches[0].clientX; lastY = e.touches[0].clientY;
+    lastMoveT = performance.now();
+    cancelAnimationFrame(rafId); velX = 0; velY = 0;
+  }, { passive: true });
+
+  flyImg.addEventListener('touchmove', e => {
+    if (!isPanning || mode !== 'max') return;
+    const dx = e.touches[0].clientX - lastX;
+    const dy = e.touches[0].clientY - lastY;
+    if (Math.abs(dx) > 4 || Math.abs(dy) > 4) hasPanned = true;
+    updateVel(dx, dy);
+    panX = resist(panX + dx, maxLimitX);
+    panY = resist(panY + dy, maxLimitY);
+    lastX = e.touches[0].clientX; lastY = e.touches[0].clientY;
+    applyPan();
+  }, { passive: true });
+
+  flyImg.addEventListener('touchend', () => {
+    isPanning = false;
+    const staleness = performance.now() - lastMoveT;
+    if (staleness > 60) { velX *= 0.3; velY *= 0.3; }
+    rafId = requestAnimationFrame(inertiaLoop);
+  });
 </script>

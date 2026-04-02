@@ -10,7 +10,7 @@ import { services } from '../data/services';
           <span class="service-number">{service.number}</span>
           <h3 class="service-title-ja">{service.titleJa}</h3>
           <p class="service-title-en">{service.titleEn}</p>
-          <p class="service-description">{service.description}</p>
+          {service.description && <p class="service-description">{service.description}</p>}
         </div>
       ))}
     </div>

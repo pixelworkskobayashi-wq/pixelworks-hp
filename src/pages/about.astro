@@ -18,8 +18,8 @@ import Layout from '../layouts/Layout.astro';
           業務円滑化・イメージ共有を支援する
         </p>
         <p class="about-text">
-          Pixel Worksは、札幌を拠点とする建築ビジュアライゼーションスタジオです。
-          建築CGパース・CGムービー・VRビジュアライゼーション・竣工写真撮影を通じて、
+          Pixel Worksは、札幌を拠点とする建築ビジュアライゼーションスタジオです。<br />
+          建築CGパース・CGムービー・VRビジュアライゼーション・竣工写真撮影を通じて、<br />
           設計事務所・ゼネコン・不動産デベロッパーの皆様の業務を支援します。
         </p>
       </section>
@@ -35,15 +35,19 @@ import Layout from '../layouts/Layout.astro';
           </div>
           <div class="info-row">
             <dt>所在地</dt>
-            <dd>北海道札幌市</dd>
+            <dd>北海道札幌市厚別区厚別北3条5丁目12-3</dd>
           </div>
           <div class="info-row">
             <dt>事業内容</dt>
-            <dd>建築ビジュアライゼーション / 建築CGパース制作 / 竣工写真撮影</dd>
+            <dd>建築ビジュアライゼーション全般 / 設計支援 / 竣工写真撮影</dd>
           </div>
           <div class="info-row">
-            <dt>ウェブサイト</dt>
-            <dd>pixel-works.info</dd>
+            <dt>TEL</dt>
+            <dd>090-9515-3461</dd>
+          </div>
+          <div class="info-row">
+            <dt>E-mail</dt>
+            <dd><a href="mailto:kobayashi@pixel-works.info">kobayashi@pixel-works.info</a></dd>
           </div>
         </dl>
       </section>
@@ -51,13 +55,30 @@ import Layout from '../layouts/Layout.astro';
       <hr class="divider fade-in" />
 
       <section class="about-section fade-in">
-        <p class="about-label">TOOLS & SOFTWARE</p>
-        <ul class="tools-list">
-          <li>3ds Max / V-Ray</li>
-          <li>Unreal Engine / TwinMotion</li>
-          <li>Adobe Photoshop / Lightroom</li>
-          <li>DaVinci Resolve</li>
-        </ul>
+        <p class="about-label">PROFILE</p>
+        <p class="profile-name">小林 祐司</p>
+        <dl class="profile-list">
+          <div class="profile-row">
+            <dt>平成14年</dt>
+            <dd>北海道工業大学建築工学科卒業<br /><span class="profile-note">（現・北海道科学大学）</span></dd>
+          </div>
+          <div class="profile-row">
+            <dt>平成18年</dt>
+            <dd>建築パース作成を主たる事業として開業</dd>
+          </div>
+          <div class="profile-row">
+            <dt>平成22年</dt>
+            <dd>1級建築士取得</dd>
+          </div>
+          <div class="profile-row">
+            <dt>平成25年</dt>
+            <dd>建築竣工写真撮影サービスを開始</dd>
+          </div>
+          <div class="profile-row">
+            <dt>令和元年</dt>
+            <dd>北海道科学大学建築学科 非常勤講師就任</dd>
+          </div>
+        </dl>
       </section>
 
     </div>
@@ -135,24 +156,49 @@ import Layout from '../layouts/Layout.astro';
   color: var(--color-text);
 }
 
-.tools-list {
-  list-style: none;
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 16px 48px;
-}
-
-.tools-list li {
-  font-size: 13px;
+.info-row a {
   color: var(--color-text);
-  padding-left: 16px;
-  position: relative;
+  text-decoration: none;
+  border-bottom: 1px solid var(--color-border);
+  transition: border-color var(--transition-base);
+}
+.info-row a:hover { border-bottom-color: var(--color-text); }
+
+.profile-name {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 28px;
+  letter-spacing: 0.05em;
 }
 
-.tools-list li::before {
-  content: '—';
-  position: absolute;
-  left: 0;
+.profile-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.profile-row {
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  gap: 24px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--color-border);
+  font-size: 13px;
+}
+
+.profile-row dt {
+  color: var(--color-text-sub);
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+.profile-row dd {
+  color: var(--color-text);
+  line-height: 1.7;
+}
+
+.profile-note {
+  font-size: 12px;
   color: var(--color-text-sub);
 }
 
@@ -161,8 +207,9 @@ import Layout from '../layouts/Layout.astro';
     grid-template-columns: 1fr;
     gap: 4px;
   }
-  .tools-list {
+  .profile-row {
     grid-template-columns: 1fr;
+    gap: 4px;
   }
 }
 </style>
