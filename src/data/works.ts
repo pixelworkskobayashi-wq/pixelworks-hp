@@ -10,13 +10,13 @@ export interface Work {
 }
 
 export const works: Work[] = [
-  { id: 'work-31', title: 'VR Tour — Office',     category: 'vr', shape: 'square',    imageUrl: '/works/samvr08.jpg', description: 'D5 Renderで制作したオフィスのXRバーチャルツアー。ホットスポットを使って各エリアを自由に移動できます。',   embedUrl: '/vr/d5tour5/index.html' },
-  { id: 'work-30', title: 'VR Tour — Dam',         category: 'vr', shape: 'landscape', imageUrl: '/works/samvr07.jpg', description: 'D5 Renderで制作したダムのXRバーチャルツアー。ホットスポットを使って各ポイントを自由に移動できます。',   embedUrl: '/vr/d5tour4/index.html' },
-  { id: 'work-25', title: 'VR Tour — Clinic',      category: 'vr', shape: 'landscape', imageUrl: '/works/samvr02.png', description: 'D5 Renderで制作した住宅のXRバーチャルツアー。ホットスポットを使って各部屋を自由に移動できます。',     embedUrl: '/vr/d5tour/index.html' },
+  { id: 'work-31', title: 'VR Tour — Office',     category: 'vr', shape: 'square',    imageUrl: '/works/samvr08.jpg', description: 'D5 Renderで制作したオフィスのXRバーチャルツアー。ホットスポットを使って各エリアを自由に移動できます。',   embedUrl: 'https://pub-15c592812d3843cea33567d5c29b3bc5.r2.dev/d5tour5/index.html' },
+  { id: 'work-30', title: 'VR Tour — Dam',         category: 'vr', shape: 'landscape', imageUrl: '/works/samvr07.jpg', description: 'D5 Renderで制作したダムのXRバーチャルツアー。ホットスポットを使って各ポイントを自由に移動できます。',   embedUrl: 'https://pub-15c592812d3843cea33567d5c29b3bc5.r2.dev/d5tour4/index.html' },
+  { id: 'work-25', title: 'VR Tour — Clinic',      category: 'vr', shape: 'landscape', imageUrl: '/works/samvr02.png', description: 'D5 Renderで制作した住宅のXRバーチャルツアー。ホットスポットを使って各部屋を自由に移動できます。',     embedUrl: 'https://pub-15c592812d3843cea33567d5c29b3bc5.r2.dev/d5tour/index.html' },
   { id: 'work-5',  title: 'VR Tour — 1F Floor',    category: 'vr', shape: 'landscape', imageUrl: '/works/samvr01.jpg', description: 'TwinMotionクラウドを使用したインタラクティブな空間体験。',                                               embedUrl: 'https://twinmotion.unrealengine.com/panorama/oLts7w1tJ2qY9Vd_?embed' },
   { id: 'work-28', title: 'VR Tour — Lounge',      category: 'vr', shape: 'square',    imageUrl: '/works/samvr04.jpg', description: 'TwinMotionクラウドを使用したラウンジのインタラクティブなVRツアー。',                                     embedUrl: 'https://twinmotion.unrealengine.com/panorama/ohqgaFH-yeRQ_bSh?embed' },
-  { id: 'work-29', title: 'VR Tour — Teahouse',    category: 'vr', shape: 'portrait',  imageUrl: '/works/samvr06.jpg', description: 'D5 Renderで制作した茶室のXRバーチャルツアー。ホットスポットを使って各空間を自由に移動できます。',     embedUrl: '/vr/d5tour3/index.html' },
-  { id: 'work-26', title: 'VR Tour — Auditorium',  category: 'vr', shape: 'square',    imageUrl: '/works/samvr03.jpg', description: 'D5 Renderで制作した住宅のXRバーチャルツアー。ホットスポットを使って各部屋を自由に移動できます。',     embedUrl: '/vr/d5tour2/index.html' },
+  { id: 'work-29', title: 'VR Tour — Teahouse',    category: 'vr', shape: 'portrait',  imageUrl: '/works/samvr06.jpg', description: 'D5 Renderで制作した茶室のXRバーチャルツアー。ホットスポットを使って各空間を自由に移動できます。',     embedUrl: 'https://pub-15c592812d3843cea33567d5c29b3bc5.r2.dev/d5tour3/index.html' },
+  { id: 'work-26', title: 'VR Tour — Auditorium',  category: 'vr', shape: 'square',    imageUrl: '/works/samvr03.jpg', description: 'D5 Renderで制作した住宅のXRバーチャルツアー。ホットスポットを使って各部屋を自由に移動できます。',     embedUrl: 'https://pub-15c592812d3843cea33567d5c29b3bc5.r2.dev/d5tour2/index.html' },
   { id: 'work-27', title: 'VR Tour — Bathroom',    category: 'vr', shape: 'landscape', imageUrl: '/works/samvr05.jpg', description: 'TwinMotionクラウドを使用したバスルームのインタラクティブなVRツアー。',                                   embedUrl: 'https://twinmotion.unrealengine.com/panorama/ZzbArbX0rJsnuZwh?embed' },
   { id: 'work-32', title: 'Rendering — W10', category: 'rendering', shape: 'portrait',  imageUrl: '/works/w10.jpg', description: '' },
   { id: 'work-34', title: 'Rendering — W07', category: 'rendering', shape: 'landscape', imageUrl: '/works/w07.jpg', description: '' },
