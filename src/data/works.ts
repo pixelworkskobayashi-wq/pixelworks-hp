@@ -6,6 +6,7 @@ export interface Work {
   description: string;
   shape: 'landscape' | 'portrait' | 'square';
   embedUrl?: string; // YouTube embed URL or Twinmotion Cloud iframe src
+  span?: number;    // custom column span override (12-col grid)
 }
 
 export const works: Work[] = [
@@ -48,7 +49,7 @@ export const works: Work[] = [
   { id: 'work-61', title: 'Rendering — W02', category: 'rendering', shape: 'portrait',  imageUrl: '/works/w02.jpg', description: '' },
   { id: 'work-62', title: 'Rendering — W17', category: 'rendering', shape: 'landscape', imageUrl: '/works/w17.jpg', description: '' },
   { id: 'work-63', title: 'Rendering — W19', category: 'rendering', shape: 'landscape', imageUrl: '/works/w19.jpg', description: '' },
-  { id: 'work-64', title: 'Rendering — W27', category: 'rendering', shape: 'landscape', imageUrl: '/works/w27.jpg', description: '' },
+  { id: 'work-64', title: 'Rendering — W27', category: 'rendering', shape: 'landscape', imageUrl: '/works/w27.jpg', description: '', span: 6 },
   { id: 'work-65', title: 'Rendering — W43', category: 'rendering', shape: 'landscape', imageUrl: '/works/w43.jpg', description: '' },
   { id: 'work-66', title: 'Rendering — W35', category: 'rendering', shape: 'landscape', imageUrl: '/works/w35.jpg', description: '' },
   { id: 'work-67', title: 'Rendering — W20', category: 'rendering', shape: 'landscape', imageUrl: '/works/w20.jpg', description: '' },
@@ -66,7 +67,7 @@ export const works: Work[] = [
   { id: 'work-79', title: 'Rendering — W09', category: 'rendering', shape: 'landscape', imageUrl: '/works/w09.jpg', description: '' },
   { id: 'work-80', title: 'Rendering — W25', category: 'rendering', shape: 'square',    imageUrl: '/works/w25.jpg', description: '' },
   { id: 'work-81', title: 'Rendering — W23', category: 'rendering', shape: 'portrait',  imageUrl: '/works/w23.jpg', description: '' },
-  { id: 'work-82', title: 'Rendering — W22', category: 'rendering', shape: 'landscape', imageUrl: '/works/w22.jpg', description: '' },
+  { id: 'work-82', title: 'Rendering — W22', category: 'rendering', shape: 'portrait',  imageUrl: '/works/w22.jpg', description: '' },
   { id: 'work-83', title: 'Rendering — W51', category: 'rendering', shape: 'portrait',  imageUrl: '/works/w51.jpg', description: '' },
   { id: 'work-84', title: 'Rendering — W14', category: 'rendering', shape: 'landscape', imageUrl: '/works/w14.jpg', description: '' },
   { id: 'work-85', title: 'Rendering — W12', category: 'rendering', shape: 'landscape', imageUrl: '/works/w12.jpg', description: '' },
@@ -165,7 +166,7 @@ export const works: Work[] = [
 export const categories = [
   { id: 'all', label: 'ALL' },
   { id: 'rendering', label: 'RENDERING' },
-  { id: 'movie', label: 'MOVIE' },
+  // { id: 'movie', label: 'MOVIE' }, // 作品追加時にコメントアウトを外す
   { id: 'vr', label: 'VR' },
   { id: 'photo', label: 'PHOTO' },
 ] as const;

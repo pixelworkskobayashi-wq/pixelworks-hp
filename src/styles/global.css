@@ -6,7 +6,7 @@
   --color-border: #eeeeee;
   --color-accent: #2c4a7c; /* 後日変更可。ここ1行だけ変えれば全体に反映 */
 
-  --font-sans: 'Noto Sans JP', 'Helvetica Neue', Arial, sans-serif;
+  --font-sans: 'Noto Sans JP', 'Plus Jakarta Sans', Arial, sans-serif;
   --letter-spacing-wide: 0.15em;
   --letter-spacing-wider: 0.25em;
 

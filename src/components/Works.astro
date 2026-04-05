@@ -26,6 +26,7 @@ import { works, categories } from '../data/works';
           data-description={work.description}
           data-image={work.imageUrl}
           data-embed-url={work.embedUrl ?? ''}
+          data-span={work.span ?? ''}
           role="button"
           tabindex="0"
         >
@@ -79,8 +80,9 @@ import { works, categories } from '../data/works';
 .filter-btn.active, .filter-btn:hover { color: var(--color-text); border-bottom-color: var(--color-text); }
 
 .works-grid {
-  display: grid; grid-template-columns: repeat(3, 1fr);
-  gap: 20px; align-items: start;
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 20px;
 }
 .work-item { overflow: visible; display: flex; flex-direction: column; }
 .work-item.hidden { display: none; }
@@ -226,8 +228,7 @@ import { works, categories } from '../data/works';
 }
 .embed-close:hover { opacity: 1; }
 
-@media (max-width: 1024px) { .works-grid { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 640px)  { .works-grid { grid-template-columns: 1fr; } }
+@media (max-width: 640px) { .works-grid { grid-template-columns: 1fr; } }
 </style>
 
 <script>
@@ -359,34 +360,53 @@ import { works, categories } from '../data/works';
     if (item.dataset.category === 'photo') item.classList.add('hidden');
   });
 
-  /* ── Row class (odd / even) ────────────────────── */
-  function updateRowClasses() {
-    const visible = workItems.filter(i => !i.classList.contains('hidden'));
+  /* ── Grid layout (staggered column gaps) ────────── */
+  // 奇数行: [4,4,4]   → ギャップが col4|col8 の位置（33%・67%）
+  // 偶数行: [3,4,5]   → ギャップが col3|col7 の位置（25%・58%）
+  const PATTERNS = [[4, 4, 4], [3, 4, 5]];
 
-    // マージンをリセットしてから行位置を検出
+  function applyGridLayout() {
+    const visible = workItems.filter(i => !i.classList.contains('hidden'));
+    const isTablet = window.innerWidth <= 1024 && window.innerWidth > 640;
+
     visible.forEach(item => {
-      item.style.marginTop = '';
+      item.style.gridColumn = '';
+      item.style.gridRow = '';
       item.classList.remove('odd-row', 'even-row');
     });
-    void visible[0]?.offsetTop; // reflow
 
-    let rowTop = -Infinity;
-    let rowIndex = 0;
-    visible.forEach(item => {
-      const top = item.offsetTop;
-      if (top > rowTop + 5) { rowTop = top; rowIndex++; }
-      item.classList.add(rowIndex % 2 === 1 ? 'odd-row' : 'even-row');
-      item.dataset.rowIndex = String(rowIndex);
-    });
+    const perRow = isTablet ? 2 : 3;
 
-    // 3行目以降の奇数行に余白を追加（行間を2倍に）
-    visible.forEach(item => {
-      const row = Number(item.dataset.rowIndex);
-      if (row >= 3 && row % 2 === 1) item.style.marginTop = '20px';
-    });
+    for (let i = 0; i < visible.length; i += perRow) {
+      const rowIdx = Math.floor(i / perRow);        // 0-based
+      const rowNum = rowIdx + 1;                    // 1-based
+      const rowItems = visible.slice(i, i + perRow);
+      // カスタムspanがある場合: 指定アイテムにそのスパンを割り当て、残りを均等分配
+      const customItem = rowItems.find(item => item.dataset.span);
+      let pattern: number[];
+      if (isTablet) {
+        pattern = [6, 6];
+      } else if (customItem) {
+        const cs = parseInt(customItem.dataset.span!);
+        const rest = Math.floor((12 - cs) / (rowItems.length - 1));
+        pattern = rowItems.map(item => item === customItem ? cs : rest);
+      } else {
+        pattern = PATTERNS[rowIdx % 2];
+      }
+
+      let col = 1;
+      rowItems.forEach((item, j) => {
+        const span = pattern[j] ?? (isTablet ? 6 : 4);
+        item.style.gridColumn = `${col} / span ${span}`;
+        item.style.gridRow   = `${rowNum}`;
+        col += span;
+        item.classList.add(rowNum % 2 === 1 ? 'odd-row' : 'even-row');
+      });
+    }
   }
-  requestAnimationFrame(updateRowClasses);
-  window.addEventListener('resize', updateRowClasses);
+
+  requestAnimationFrame(applyGridLayout);
+  window.addEventListener('resize', applyGridLayout);
 
   const observer = new IntersectionObserver(
     entries => {
@@ -419,7 +439,7 @@ import { works, categories } from '../data/works';
           item.classList.add('hidden');
         }
       });
-      requestAnimationFrame(updateRowClasses);
+      requestAnimationFrame(applyGridLayout);
     });
   });
 

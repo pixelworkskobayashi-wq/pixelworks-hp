@@ -14,6 +14,7 @@ const MIME_TYPES = {
   '.webp': 'image/webp',
   '.css':  'text/css',
   '.ico':  'image/x-icon',
+  '.mp4':  'video/mp4',
   '.exr':  'application/octet-stream',
   '.pcd':  'application/octet-stream',
   '.mtl':  'model/mtl',
@@ -54,6 +55,9 @@ export default defineConfig({
         server.middlewares.use('/works', (req, res, next) => {
           const filePath = path.join(LOCAL_WORKS_DIR, req.url || '');
           if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+            const ext = path.extname(filePath).toLowerCase();
+            const mime = MIME_TYPES[ext] || 'application/octet-stream';
+            res.setHeader('Content-Type', mime);
             res.setHeader('Cache-Control', 'no-cache');
             fs.createReadStream(filePath).pipe(res);
           } else {
