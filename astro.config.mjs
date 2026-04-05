@@ -1,5 +1,6 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
+import sitemap from '@astrojs/sitemap';
 import path from 'path';
 import fs from 'fs';
 
@@ -31,6 +32,8 @@ const LOCAL_PHOTO_DIR   = 'D:/Pixel Works/HP2026/works/photo';
 
 // https://astro.build/config
 export default defineConfig({
+  site: 'https://www.pixel-works.info',
+  integrations: [sitemap()],
   devToolbar: {
     enabled: false,
   },
