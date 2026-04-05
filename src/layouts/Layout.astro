@@ -14,7 +14,7 @@ const { title, description = '建築ビジュアライゼーション・建築CG
 <html lang="ja">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <meta name="description" content={description} />
     <title>{title} | PIXEL WORKS</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -28,6 +28,11 @@ const { title, description = '建築ビジュアライゼーション・建築CG
     </main>
     <Footer />
     <script>
+      // ピンチズーム無効化（iOS Safariはviewportのuser-scalable=noを無視するため）
+      document.addEventListener('touchmove', (e) => {
+        if (e.touches.length > 1) e.preventDefault();
+      }, { passive: false });
+
       // Scroll fade-in
       const observer = new IntersectionObserver(
         (entries) => {
