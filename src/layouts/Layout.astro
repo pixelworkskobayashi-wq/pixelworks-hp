@@ -11,7 +11,7 @@ interface Props {
 const { title, description = '建築ビジュアライゼーション・建築CGパース制作・竣工写真撮影 | 札幌' } = Astro.props;
 ---
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="ja" style="touch-action: pan-x pan-y;">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
@@ -20,19 +20,28 @@ const { title, description = '建築ビジュアライゼーション・建築CG
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;700&display=swap" rel="stylesheet" />
+    <style>
+      /* ピンチズーム無効化: CSSをheadで即時適用 */
+      html, body { touch-action: pan-x pan-y; }
+    </style>
+    <script>
+      // ピンチズーム無効化: capture:trueでスクロール中のピンチも早期捕捉
+      const noZoom = (e: TouchEvent) => { if (e.touches.length > 1) e.preventDefault(); };
+      document.addEventListener('touchstart', noZoom, { passive: false, capture: true });
+      document.addEventListener('touchmove',  noZoom, { passive: false, capture: true });
+      const noGesture = (e: Event) => e.preventDefault();
+      document.addEventListener('gesturestart',  noGesture, { passive: false, capture: true });
+      document.addEventListener('gesturechange', noGesture, { passive: false, capture: true });
+      document.addEventListener('gestureend',    noGesture, { passive: false, capture: true });
+    </script>
   </head>
-  <body>
+  <body style="touch-action: pan-x pan-y;">
     <Header />
     <main style="padding-top: var(--header-height);">
       <slot />
     </main>
     <Footer />
     <script>
-      // ピンチズーム無効化（iOS Safariはviewportのuser-scalable=noを無視するため）
-      document.addEventListener('touchmove', (e) => {
-        if (e.touches.length > 1) e.preventDefault();
-      }, { passive: false });
-
       // Scroll fade-in
       const observer = new IntersectionObserver(
         (entries) => {
