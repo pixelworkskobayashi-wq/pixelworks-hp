@@ -23,13 +23,7 @@
 
     <div class="form-row">
       <label class="form-label" for="message">お問い合わせ内容 <span class="required">*</span></label>
-      <textarea id="message" name="message" required rows="6" class="form-input form-textarea" placeholder="ご依頼の内容・ご予算・スケジュール等をお聞かせください。"></textarea>
-    </div>
-
-    <div class="form-row">
-      <label class="form-label" for="attachment">添付ファイル</label>
-      <input id="attachment" type="file" name="attachment" class="form-file" accept=".pdf,.jpg,.jpeg,.png,.zip" />
-      <p class="form-hint">PDF / JPG / PNG / ZIP（10MB以内）</p>
+      <textarea id="message" name="message" required rows="6" class="form-input form-textarea" placeholder="ご依頼の内容・ご予算・スケジュール等をお聞かせください。&#13;&#10;※資料等のファイルは kobayashi@pixel-works.info へ直接メールにてお送りください。"></textarea>
     </div>
 
     <div class="form-submit">
@@ -100,7 +94,9 @@
       body: data,
     });
 
-    if (res.ok) {
+    const result = await res.json().catch(() => ({ success: false, message: 'Unknown error' }));
+
+    if (res.ok && result.success) {
       form.style.transition = 'opacity 0.4s ease';
       form.style.opacity = '0';
       setTimeout(() => {
